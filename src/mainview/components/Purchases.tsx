@@ -1,7 +1,6 @@
 import { useStore } from "../../store";
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, Search, X, Download } from "lucide-react";
-import type { Supplier } from "../../database/types";
+import { Plus, Trash2, X, Download } from "lucide-react";
 import { purchasesRepository, suppliersRepository } from "../../database/repositories";
 import type { PurchaseWithMaterial } from "../../database/types";
 import { exportToCSV } from "../../utils/export";
@@ -38,14 +37,14 @@ export function Purchases() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const total_cost = formData.quantity * formData.unit_cost;
-    
+
     if (editingPurchase) {
       const oldPurchase = purchasesRepository.getById(editingPurchase.id);
       if (oldPurchase) {
         purchasesRepository.delete(editingPurchase.id);
       }
     }
-    
+
     purchasesRepository.create({
       material_id: formData.material_id,
       supplier_id: formData.supplier_id,
@@ -53,7 +52,7 @@ export function Purchases() {
       unit_cost: formData.unit_cost,
       total_cost
     });
-    
+
     resetForm();
     loadPurchases();
     loadRawMaterials();
