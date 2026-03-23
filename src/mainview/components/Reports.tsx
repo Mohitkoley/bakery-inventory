@@ -1,7 +1,7 @@
 import { useStore } from "../../store";
 import { useState, useEffect } from "react";
 import { Download, BarChart3, TrendingUp, Calendar } from "lucide-react";
-import { productsRepository, rawMaterialsRepository, salesRepository, purchasesRepository } from "../../database/repositories";
+import { salesRepository, purchasesRepository } from "../../database/repositories";
 import { exportToCSV } from "../../utils/export";
 
 type ReportType = "sales" | "inventory" | "purchases";
@@ -26,10 +26,10 @@ export function Reports() {
 
   const loadReportData = () => {
     if (reportType === "sales") {
-      const sales = salesRepository.getByDateRange(startDate, endDate + " 23:59:59");
+      const sales = salesRepository.getByDateRange(startDate, endDate);
       setSalesData(sales);
     } else if (reportType === "purchases") {
-      const purchases = purchasesRepository.getByDateRange(startDate, endDate + " 23:59:59");
+      const purchases = purchasesRepository.getByDateRange(startDate, endDate);
       setPurchaseData(purchases);
     }
   };

@@ -1,4 +1,4 @@
-import { runQuery, runInsert, runUpdate, saveDatabase } from "../sqlite";
+import { runQuery, runInsert, runUpdate } from "../sqlite";
 import type { Purchase, PurchaseWithMaterial, Supplier } from "../types";
 import { rawMaterialsRepository } from "./rawMaterials";
 
@@ -30,7 +30,7 @@ export const purchasesRepository = {
       FROM purchases p
       JOIN raw_materials rm ON p.material_id = rm.id
       LEFT JOIN suppliers s ON p.supplier_id = s.id
-      WHERE p.created_at >= ? AND p.created_at <= ?
+      WHERE date(p.created_at) >= date(?) AND date(p.created_at) <= date(?)
       ORDER BY p.created_at DESC
     `, [startDate, endDate]);
   },

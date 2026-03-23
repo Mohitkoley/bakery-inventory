@@ -1,4 +1,4 @@
-import { runQuery, runInsert, runUpdate, saveDatabase } from "../sqlite";
+import { runQuery, runInsert, runUpdate } from "../sqlite";
 import type { Sale, SaleWithProduct } from "../types";
 import { productsRepository } from "./products";
 import { rawMaterialsRepository } from "./rawMaterials";
@@ -29,7 +29,7 @@ export const salesRepository = {
       SELECT s.*, p.name as product_name
       FROM sales s
       JOIN products p ON s.product_id = p.id
-      WHERE s.created_at >= ? AND s.created_at <= ?
+      WHERE date(s.created_at) >= date(?) AND date(s.created_at) <= date(?)
       ORDER BY s.created_at DESC
     `, [startDate, endDate]);
   },
@@ -91,7 +91,7 @@ export const salesRepository = {
     const results = runQuery(`
       SELECT COUNT(*) as count, COALESCE(SUM(total_price), 0) as total
       FROM sales
-      WHERE created_at >= ? AND created_at <= ?
+      WHERE date(created_at) >= date(?) AND date(created_at) <= date(?)
     `, [startDate, endDate]);
     return results[0] || { count: 0, total: 0 };
   }
