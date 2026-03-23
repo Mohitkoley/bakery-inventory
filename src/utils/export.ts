@@ -1,26 +1,49 @@
-// Export utilities for CSV file downloads using Electrobun RPC
-declare global {
-  interface Window {
-    electrobun: {
-      rpc: {
-        request: {
-          saveFile: (params: { filename: string; content: string }) => Promise<{ success: boolean; path?: string; error?: string }>;
-        };
+import { Electroview, type RPCSchema } from "electrobun/view";
+
+// Define RPC schema for type-safe communication (matches src/bun/index.ts)
+type AppRPC = {
+  bun: RPCSchema<{
+    requests: {
+      saveFile: {
+        params: { filename: string; content: string };
+        response: { success: boolean; path?: string; error?: string };
       };
     };
+    messages: {};
+  }>;
+  webview: RPCSchema<{
+    requests: {};
+    messages: {};
+  }>;
+};
+
+let electroview: Electroview<any> | null = null;
+
+if (typeof window !== "undefined" && window.__electrobun) {
+  try {
+    const rpc = Electroview.defineRPC<AppRPC>({
+      handlers: {
+        requests: {},
+        messages: {},
+      },
+    });
+    electroview = new Electroview({ rpc });
+  } catch (err) {
+    console.error("Failed to initialize Electroview", err);
   }
 }
 
 export async function exportToCSV(filename: string, csvContent: string): Promise<{ success: boolean; path?: string; error?: string }> {
   // Try RPC first (Electrobun desktop app)
-  if (typeof window !== "undefined" && window.electrobun?.rpc) {
+  if (electroview && electroview.rpc) {
     try {
-      const result = await window.electrobun.rpc.request.saveFile({
+      const result = await electroview.rpc.request.bun.saveFile({
         filename,
         content: csvContent,
       });
       return result;
     } catch (error) {
+      console.error("Electrobun RPC error:", error);
       return { success: false, error: String(error) };
     }
   }

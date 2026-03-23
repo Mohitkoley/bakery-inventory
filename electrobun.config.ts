@@ -15,6 +15,9 @@ export default {
 		watchIgnore: ["dist/**"],
 		mac: {
 			bundleCEF: false,
+			entitlements: {
+				"com.apple.security.files.downloads.read-write": "Required for exporting inventory and sales data as CSV."
+			}
 		},
 		linux: {
 			bundleCEF: false,

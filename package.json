@@ -7,7 +7,8 @@
 		"dev": "electrobun dev --watch",
 		"dev:hmr": "concurrently \"bun run hmr\" \"bun run start\"",
 		"hmr": "vite --port 5173",
-		"build:canary": "vite build && electrobun build --env=canary"
+		"build:canary": "vite build && electrobun build --env=canary",
+		"build:prod": "vite build && electrobun build"
 	},
 	"dependencies": {
 		"sql.js": "^1.11.0",

@@ -52,8 +52,8 @@ jobs:
         with:
           name: bakery-inventory-${{ matrix.artifact_name }}
           path: |
-            build/release/**
-            !build/release/**/*.pdb
+            artifacts/**
+            !artifacts/**/*.pdb
           retention-days: 30
 
   release:
