@@ -19,6 +19,10 @@ bun run build
 
 # Build for production release
 bun run build:prod
+
+
+#for cleaning
+bun clean
 ```
 
 ## How HMR Works
