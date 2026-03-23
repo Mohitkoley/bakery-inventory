@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { initDatabase } from "../database/sqlite";
-import type { Product, RawMaterial, Sale, Supplier, User, DashboardStats } from "../database/types";
-import { productsRepository, rawMaterialsRepository, salesRepository, suppliersRepository, usersRepository } from "../database/repositories";
+import type { Product, RawMaterial, Sale, Supplier, User, DashboardStats, Recipe, RecipeWithMaterial } from "../database/types";
+import { productsRepository, rawMaterialsRepository, salesRepository, suppliersRepository, usersRepository, categoriesRepository, recipesRepository } from "../database/repositories";
 
 let dbInitialized = false;
 
@@ -21,6 +21,8 @@ interface AppState {
   sales: Sale[];
   suppliers: Supplier[];
   users: Omit<User, "pin">[];
+  categories: { id: number; name: string; type: 'product' | 'material' }[];
+  recipes: RecipeWithMaterial[];
   dashboardStats: DashboardStats;
   
   login: (pin: string) => Promise<boolean>;
@@ -51,6 +53,16 @@ interface AppState {
   updateUser: (id: number, user: Partial<User>) => void;
   deleteUser: (id: number) => void;
   
+  loadCategories: () => void;
+  addCategory: (category: { name: string; type: 'product' | 'material' }) => { id: number; name: string; type: string };
+  updateCategory: (id: number, name: string) => void;
+  deleteCategory: (id: number) => void;
+  
+  loadRecipes: () => void;
+  addRecipe: (recipe: Omit<Recipe, "id" | "created_at" | "updated_at" | "sync_status">) => Recipe;
+  updateRecipe: (id: number, recipe: Partial<Recipe>) => void;
+  deleteRecipe: (id: number) => void;
+  
   loadDashboardStats: () => void;
   refresh: () => void;
 }
@@ -64,6 +76,8 @@ export const useStore = create<AppState>((set, get) => ({
   sales: [],
   suppliers: [],
   users: [],
+  categories: [],
+  recipes: [],
   dashboardStats: {
     totalSalesToday: 0,
     totalRevenueToday: 0,
@@ -218,12 +232,56 @@ export const useStore = create<AppState>((set, get) => ({
     });
   },
 
+  loadCategories: () => {
+    const categories = categoriesRepository.getAll();
+    set({ categories });
+  },
+
+  addCategory: (category) => {
+    const newCategory = categoriesRepository.create(category);
+    get().loadCategories();
+    return newCategory;
+  },
+
+  updateCategory: (id, name) => {
+    categoriesRepository.update(id, name);
+    get().loadCategories();
+  },
+
+  deleteCategory: (id) => {
+    categoriesRepository.delete(id);
+    get().loadCategories();
+  },
+
+  loadRecipes: () => {
+    const recipes = recipesRepository.getAll();
+    set({ recipes });
+  },
+
+  addRecipe: (recipe) => {
+    const newRecipe = recipesRepository.create(recipe);
+    get().loadRecipes();
+    return newRecipe;
+  },
+
+  updateRecipe: (id, recipe) => {
+    recipesRepository.update(id, recipe);
+    get().loadRecipes();
+  },
+
+  deleteRecipe: (id) => {
+    recipesRepository.delete(id);
+    get().loadRecipes();
+  },
+
   refresh: () => {
     get().loadProducts();
     get().loadRawMaterials();
     get().loadSales();
     get().loadSuppliers();
     get().loadUsers();
+    get().loadCategories();
+    get().loadRecipes();
     get().loadDashboardStats();
   }
 }));

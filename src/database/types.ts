@@ -112,3 +112,9 @@ export interface SalesReport {
   total_price: number;
   date: string;
 }
+
+export interface Category {
+  id: number;
+  name: string;
+  type: 'product' | 'material';
+}
