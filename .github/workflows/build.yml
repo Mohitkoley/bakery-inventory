@@ -37,15 +37,15 @@ jobs:
 
       - name: Build Electron App
         if: matrix.platform == 'windows-latest'
-        run: bunx electrobun build --platform win --arch x64
+        run: bunx electrobun build --platform win --arch x64 --env=stable
 
       - name: Build Electron App
         if: matrix.platform == 'macos-latest'
-        run: bunx electrobun build --platform mac --arch arm64
+        run: bunx electrobun build --platform mac --arch arm64 --env=stable
 
       - name: Build Electron App
         if: matrix.platform == 'ubuntu-latest'
-        run: bunx electrobun build --platform linux --arch x64
+        run: bunx electrobun build --platform linux --arch x64 --env=stable
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
