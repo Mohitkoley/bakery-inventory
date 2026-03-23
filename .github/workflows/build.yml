@@ -1,0 +1,83 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - platform: macos-latest
+            artifact_name: macos
+          - platform: windows-latest
+            artifact_name: windows
+          - platform: ubuntu-latest
+            artifact_name: linux
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build Vite
+        run: bun run vite build
+
+      - name: Build Electron App
+        if: matrix.platform == 'windows-latest'
+        run: bunx electrobun build --platform win --arch x64
+
+      - name: Build Electron App
+        if: matrix.platform == 'macos-latest'
+        run: bunx electrobun build --platform mac --arch arm64
+
+      - name: Build Electron App
+        if: matrix.platform == 'ubuntu-latest'
+        run: bunx electrobun build --platform linux --arch x64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bakery-inventory-${{ matrix.artifact_name }}
+          path: |
+            build/release/**
+            !build/release/**/*.pdb
+          retention-days: 30
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/bakery-inventory-windows/**/*
+            artifacts/bakery-inventory-macos/**/*
+            artifacts/bakery-inventory-linux/**/*
+          draft: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
