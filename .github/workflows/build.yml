@@ -35,15 +35,15 @@ jobs:
       - name: Build Vite
         run: bun run vite build
 
-      - name: Build Electron App
+      - name: Build Electron App (Windows)
         if: matrix.platform == 'windows-latest'
         run: bunx electrobun build --platform win --arch x64 --env=stable
 
-      - name: Build Electron App
+      - name: Build Electron App (macOS)
         if: matrix.platform == 'macos-latest'
         run: bunx electrobun build --platform mac --arch arm64 --env=stable
 
-      - name: Build Electron App
+      - name: Build Electron App (Linux)
         if: matrix.platform == 'ubuntu-latest'
         run: bunx electrobun build --platform linux --arch x64 --env=stable
 
@@ -52,7 +52,7 @@ jobs:
         with:
           name: bakery-inventory-${{ matrix.artifact_name }}
           path: |
-            artifacts/**
+            artifacts/
             !artifacts/**/*.pdb
           retention-days: 30
 
@@ -70,16 +70,26 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: release-artifacts
+
+      # NEW STEP: Zip each OS folder into a single, release-ready file
+      - name: Zip artifacts for release
+        run: |
+          cd release-artifacts
+          # Loop through every folder downloaded and zip its contents
+          for dir in */; do
+            # Remove the trailing slash from the directory name
+            dir_name=${dir%/}
+            # Create a zip file named after the folder (e.g., bakery-inventory-windows.zip)
+            zip -r "${dir_name}.zip" "$dir_name"
+          done
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v0.0.{0}', github.run_number) }}
-          files: |
-            artifacts/bakery-inventory-windows/**/*
-            artifacts/bakery-inventory-macos/**/*
-            artifacts/bakery-inventory-linux/**/*
+          # Only upload the newly created .zip files
+          files: release-artifacts/*.zip
           draft: true
           prerelease: false
         env:
